@@ -1,8 +1,29 @@
 # frozen_string_literal: true
 
+##
+# {Chan::Pipe Chan::Pipe} is a channel that uses
+# {IO.pipe} for InterProcess Communication. It
+# provides a send/recv interface with optional
+# file locking for synchronisation across processes.
 class Chan::Pipe
-  attr_reader :r, :w
+  ##
+  # @return [IO]
+  #  Returns the read end of the pipe
+  attr_reader :r
 
+  ##
+  # @return [IO]
+  #  Returns the write end of the pipe
+  attr_reader :w
+
+  ##
+  # @param [#dump, #load] serializer
+  #  An object that implements `dump` and `load`
+  # @param [String] tmpdir
+  #  Directory where temporary files can be stored
+  # @param [Symbol, Chan::NullLock, Chan::Lockf] lock
+  #  The name of a lock (`:null` or `:file`), or a lock object
+  # @return [Chan::Pipe]
   def initialize(serializer, tmpdir: Chan.tmpdir, lock: :null)
     @s = Chan.serializers[serializer]&.call || serializer
     @r, @w = IO.pipe
@@ -14,10 +35,16 @@ class Chan::Pipe
     @lock = init_lock(lock)
   end
 
+  ##
+  # @return [Boolean] true when the channel is closed
   def closed?
     @r.closed? && @w.closed?
   end
 
+  ##
+  # Closes the channel and removes temporary files
+  # @raise [IOError] when the channel is already closed
+  # @return [void]
   def close
     @lock.lock
     raise IOError, "closed channel" if closed?
@@ -28,6 +55,14 @@ class Chan::Pipe
     raise
   end
 
+  ##
+  # @group Write methods
+
+  ##
+  # Performs a blocking write
+  # @param [Object] object to serialise and send
+  # @raise [IOError] when the channel is closed
+  # @return [Integer] number of bytes written
   def send(object)
     @lock.lock_nonblock
     raise IOError, "closed channel" if closed?
@@ -43,6 +78,16 @@ class Chan::Pipe
   end
   alias_method :write, :send
 
+  ##
+  # @endgroup
+
+  ##
+  # @group Read methods
+
+  ##
+  # Performs a blocking read
+  # @raise [IOError] when the channel is closed
+  # @return [Object] deserialised object from the channel
   def recv
     @lock.lock_nonblock
     raise IOError, "closed channel" if closed?
@@ -56,24 +101,41 @@ class Chan::Pipe
   end
   alias_method :read, :recv
 
+  ##
+  # @endgroup
+
+  ##
+  # @group Stat methods
+
+  ##
+  # @return [Boolean] true when the channel is empty
   def empty?
     return true if closed?
     size.zero?
   end
 
+  ##
+  # @return [Integer] number of objects waiting to be read
   def size
     @bytes.size
   end
 
+  ##
+  # @return [Integer] total bytes written to the channel
   def bytes_sent
     @counter.bytes_written
   end
   alias_method :bytes_written, :bytes_sent
 
+  ##
+  # @return [Integer] total bytes read from the channel
   def bytes_received
     @counter.bytes_read
   end
   alias_method :bytes_read, :bytes_received
+
+  ##
+  # @endgroup
 
   private
 
