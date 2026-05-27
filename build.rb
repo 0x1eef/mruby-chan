@@ -6,6 +6,7 @@ MRuby::Build.new("mruby-chan") do |conf|
   conf.gem core: "mruby-dir"
   conf.gem core: "mruby-time"
   conf.gem core: "mruby-struct"
+  conf.gem github: "0x1eef/mruby-minitest", branch: "main"
   conf.gem File.expand_path(__dir__)
 
   case ENV["BUILD_PROFILE"] || "test"
