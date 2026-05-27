@@ -9,8 +9,8 @@ class Chan::Pipe
     @bytes_path = tmpfile_path(tmpdir, "bytes")
     @counter_path = tmpfile_path(tmpdir, "counter")
     @lock_path = tmpfile_path(tmpdir, "lock")
-    @bytes = Bytes.new(@bytes_path)
-    @counter = Counter.new(@counter_path)
+    @bytes = Chan::Bytes.new(@bytes_path)
+    @counter = Chan::Counter.new(@counter_path)
     @lock = init_lock(lock)
   end
 
@@ -104,8 +104,8 @@ class Chan::Pipe
 
   def init_lock(lock)
     case lock
-    when :null then NullLock
-    when :file then Lockf.new(File.open(@lock_path, File::RDWR | File::CREAT))
+    when :null then Chan::NullLock
+    when :file then Chan::Lockf.new(File.open(@lock_path, File::RDWR | File::CREAT))
     else lock
     end
   end
