@@ -1,6 +1,8 @@
 /* mruby-chan — POSIX lockf() bindings for mruby */
 #include <mruby.h>
 #include <mruby/class.h>
+#include <mruby/error.h>
+#include <errno.h>
 #include <unistd.h>
 
 static mrb_value
