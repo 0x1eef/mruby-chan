@@ -1,44 +1,22 @@
 # frozen_string_literal: true
 
-##
-# {Chan::Counter Chan::Counter} provides a counter
-# for the number of written and received bytes on a
-# given channel.
 class Chan::Counter
-  ##
-  # @param [String] path
-  #  Path to a file used to back the counter
-  # @return [Chan::Counter]
   def initialize(path)
     @io = File.open(path, File::RDWR | File::CREAT | File::TRUNC)
-    @io.binmode
     @io.sync = true
     write(@io, 0, 0)
   end
 
-  ##
-  # @return [Integer]
-  #  Returns the number of bytes written to a channel
   def bytes_written
     _, bytes = read(@io)
     bytes
   end
 
-  ##
-  # @return [Integer]
-  #  Returns the number of bytes read from a channel
   def bytes_read
     bytes, _ = read(@io)
     bytes
   end
 
-  ##
-  # @param [Integer] bytes_read
-  #  Number of bytes read to increment the counter by
-  # @param [Integer] bytes_written
-  #  Number of bytes written to increment the counter by
-  # @return [void]
-  # @private
   def increment!(bytes_read: 0, bytes_written: 0)
     bytes_in, bytes_out = read(@io)
     bytes_in += bytes_read
@@ -46,9 +24,6 @@ class Chan::Counter
     write(@io, bytes_in, bytes_out)
   end
 
-  ##
-  # Close the counter
-  # @return [void]
   def close
     @io.close
   end
