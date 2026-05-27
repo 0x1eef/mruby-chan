@@ -2,6 +2,26 @@
 
 module Chan
   ##
+  # Coerces an object to a string for a
+  # channel communicating in raw strings
+  Pure = Class.new do
+    def self.dump(str) = str.to_s
+    def self.load(str) = str.to_s
+  end
+
+  ##
+  # @return [Hash<Symbol, Proc>]
+  #  Returns the default serializers
+  def self.serializers
+    {
+      pure: lambda { Pure },
+      json: lambda {
+        JSON
+      }
+    }
+  end
+
+  ##
   # @return [String]
   #  Returns a path suitable for temporary files
   def self.tmpdir
@@ -12,9 +32,9 @@ end
 module Kernel
   ##
   # @example
-  #   ch = xchan(JSON)
-  #   ch.send([1, 2, 3])
-  #   ch.recv.pop # => 3
+  #   ch = xchan(Chan::Pure)
+  #   ch.send("hello")
+  #   ch.recv # => "hello"
   #   ch.close
   # @param [#dump, #load] serializer
   #  An object that implements `dump` and `load`
