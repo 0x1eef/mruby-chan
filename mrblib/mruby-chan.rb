@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module Chan
+  WaitReadable = Class.new(IOError)
+  WaitWritable = Class.new(IOError)
+
   ##
   # Coerces an object to a string for a
   # channel communicating in raw strings
