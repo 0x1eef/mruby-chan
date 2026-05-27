@@ -1,0 +1,52 @@
+module Chan
+  class Counter
+    def initialize(path)
+      @io = File.open(path, File::RDWR | File::CREAT | File::TRUNC)
+      @io.binmode
+      @io.sync = true
+      write(@io, 0, 0)
+    end
+
+    def bytes_written
+      _, bytes = read(@io)
+      bytes
+    end
+
+    def bytes_read
+      bytes, _ = read(@io)
+      bytes
+    end
+
+    def increment!(bytes_read: 0, bytes_written: 0)
+      bytes_in, bytes_out = read(@io)
+      bytes_in += bytes_read
+      bytes_out += bytes_written
+      write(@io, bytes_in, bytes_out)
+    end
+
+    def close
+      @io.close
+    end
+
+    private
+
+    def write(io, bytes_read, bytes_written)
+      io.rewind
+      io.truncate(0)
+      io.write(serialize(bytes_read, bytes_written))
+      io.rewind
+    end
+
+    def read(io)
+      deserialize(io.read).tap { io.rewind }
+    end
+
+    def serialize(bytes_read, bytes_written)
+      [bytes_read, bytes_written].pack("Q>Q>")
+    end
+
+    def deserialize(payload)
+      payload.unpack("Q>Q>")
+    end
+  end
+end
