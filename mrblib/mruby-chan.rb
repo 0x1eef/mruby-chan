@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+##
+# @author 0x1eef
+# @since 0.1.0
+# @example
+#   ch = xchan(Chan::Pure)
+#   ch.send("hello")
+#   ch.recv # => "hello"
+#   ch.close
 module Chan
   WaitReadable = Class.new(IOError)
   WaitWritable = Class.new(IOError)
