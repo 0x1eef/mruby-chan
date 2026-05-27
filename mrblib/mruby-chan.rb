@@ -9,9 +9,6 @@
 #   ch.recv # => "hello"
 #   ch.close
 module Chan
-  WaitReadable = Class.new(IOError)
-  WaitWritable = Class.new(IOError)
-
   ##
   # Coerces an object to a string for a
   # channel communicating in raw strings
