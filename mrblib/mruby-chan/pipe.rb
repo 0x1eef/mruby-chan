@@ -63,7 +63,7 @@ class Chan::Pipe
   # @param [Object] object to serialise and send
   # @raise [IOError] when the channel is closed
   # @return [Integer] number of bytes written
-  def send(object)
+  def write(object)
     data = serialize(object)
     len = data.bytesize
     @lock.lock_nonblock
@@ -79,7 +79,6 @@ class Chan::Pipe
   ensure
     @lock.release rescue nil
   end
-  alias_method :write, :send
 
   ##
   # @endgroup
@@ -91,7 +90,7 @@ class Chan::Pipe
   # Performs a blocking read
   # @raise [IOError] when the channel is closed
   # @return [Object] deserialised object from the channel
-  def recv
+  def read
     @lock.lock_nonblock
     raise IOError, "closed channel" if closed?
     len = @bytes.shift
@@ -106,7 +105,6 @@ class Chan::Pipe
   ensure
     @lock.release rescue nil
   end
-  alias_method :read, :recv
 
   ##
   # @endgroup

@@ -15,7 +15,7 @@ at the same time.
 
 * Minimalist Inter-Process Communication (IPC) for parent &lt;=&gt; child processes.
 * Channel-based communication using `IO.pipe`.
-* Support for raw string communication (`Chan::Pure`).
+* Support for raw string communication (`:pure`).
 * Blocking (`#send`, `#recv`) operations.
 * Built-in file-based locking ([lockf(3)](https://man.freebsd.org/cgi/man.cgi?query=lockf&sektion=3)) to prevent race conditions.
 * Option to use a null lock for scenarios where locking is not needed.
@@ -30,36 +30,36 @@ at the same time.
 The `chan` method creates a channel with a given serializer:
 
 ```ruby
-ch = chan(Chan::Pure)
+ch = chan(:pure)
 ```
 
 ### Serialization
 
 A channel that will communicate purely in strings (in other words:
-without serialization) is available as `chan(Chan::Pure)`. Otherwise
+without serialization) is available as `chan(:pure)`. Otherwise
 a custom serializer can be passed &mdash; any object that implements `dump`
 and `load`:
 
 ```ruby
-ch = chan(Chan::Pure)
+ch = chan(:pure)
 ```
 
 ### Read operations
 
 #### #recv
 
-The `ch.recv` method performs a blocking read.
+The `ch.read` method performs a blocking read.
 The example performs a read that blocks until
 the parent process writes to the channel:
 
 ```ruby
-ch = chan(Chan::Pure)
+ch = chan(:pure)
 fork do
-  print "Received: ", ch.recv, "\n"
+  print "Received: ", ch.read, "\n"
 end
 sleep(1)
 puts "Sending..."
-ch.send("hello")
+ch.write("hello")
 ch.close
 Process.wait
 
@@ -70,15 +70,15 @@ Process.wait
 
 #### #send
 
-The `ch.send` method performs a blocking write.
+The `ch.write` method performs a blocking write.
 A write can block when a lock is held by another process:
 
 ```ruby
-ch = chan(Chan::Pure)
+ch = chan(:pure)
 fork do
-  puts ch.recv
+  puts ch.read
 end
-ch.send("hello from parent")
+ch.write("hello from parent")
 ch.close
 Process.wait
 
@@ -95,10 +95,10 @@ implemented with the
 function from the C standard library:
 
 ```ruby
-ch = chan(Chan::Pure, lock: :file)
+ch = chan(:pure, lock: :file)
 5.times.map do
   fork do
-    ch.send("data")
+    ch.write("data")
   end
 end.each { Process.wait(_1) }
 ```
@@ -109,9 +109,9 @@ The null lock is the same as using no lock at all. The null lock is
 implemented as a collection of no-op operations:
 
 ```ruby
-ch = chan(Chan::Pure, lock: :null)
+ch = chan(:pure, lock: :null)
 fork do
-  ch.send("data")
+  ch.write("data")
 end
 Process.wait
 ```
@@ -122,7 +122,7 @@ Access to the underlying pipe ends is available through
 `ch.r` (read end) and `ch.w` (write end):
 
 ```ruby
-ch = chan(Chan::Pure)
+ch = chan(:pure)
 puts "Read end: #{ch.r}"
 puts "Write end: #{ch.w}"
 ```

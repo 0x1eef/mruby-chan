@@ -5,8 +5,8 @@
 # @since 0.1.0
 # @example
 #   ch = chan(Chan::Pure)
-#   ch.send("hello")
-#   ch.recv # => "hello"
+#   ch.write("hello")
+#   ch.read # => "hello"
 #   ch.close
 module Chan
   ##
@@ -23,9 +23,7 @@ module Chan
   def self.serializers
     {
       pure: lambda { Pure },
-      json: lambda {
-        JSON
-      }
+      json: lambda { JSON }
     }
   end
 
@@ -41,8 +39,8 @@ module Kernel
   ##
   # @example
   #   ch = chan(Chan::Pure)
-  #   ch.send("hello")
-  #   ch.recv # => "hello"
+  #   ch.write("hello")
+  #   ch.read # => "hello"
   #   ch.close
   # @param [#dump, #load] serializer
   #  An object that implements `dump` and `load`
