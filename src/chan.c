@@ -48,7 +48,7 @@ mrb_chan_nonblock(mrb_state *mrb, mrb_value self)
     mrb_sys_fail(mrb, "fcntl");
   }
   if(fcntl(wfd, F_SETFL, fcntl(wfd, F_GETFL) | O_NONBLOCK) == -1) {
-    mrb_sys_fail("mrb", "fcntl");
+    mrb_sys_fail(mrb, "fcntl");
   }
   return mrb_nil_value();
 }
