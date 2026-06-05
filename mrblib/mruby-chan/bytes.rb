@@ -72,6 +72,7 @@ class Chan::Bytes
   private
 
   def read(io)
+    io.rewind
     deserialize(io.read).tap { io.rewind }
   end
 

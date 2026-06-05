@@ -62,6 +62,7 @@ class Chan::Counter
   end
 
   def read(io)
+    io.rewind
     deserialize(io.read).tap { io.rewind }
   end
 
@@ -70,6 +71,7 @@ class Chan::Counter
   end
 
   def deserialize(payload)
-    payload.unpack("Q>Q>")
+    bytes_read, bytes_written = payload.unpack("Q>Q>")
+    [bytes_read || 0, bytes_written || 0]
   end
 end

@@ -10,7 +10,8 @@ class Chan::Lockf
   #  An open file descriptor
   # @return [Chan::Lockf]
   def initialize(fd)
-    @fd = fd
+    @io = fd if fd.respond_to?(:fileno)
+    @fd = @io ? @io.fileno : fd
   end
 
   ##
