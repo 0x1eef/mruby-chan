@@ -1,9 +1,10 @@
 # frozen_string_literal: true
+load File.join(__dir__, "mrblib", "mruby-chan", "version.rb")
 
 MRuby::Gem::Specification.new("mruby-chan") do |spec|
   spec.license = "0BSD"
   spec.authors = "0x1eef"
-  spec.version = "0.1.0"
+  spec.version = Chan::VERSION
   spec.description = "InterProcess Communication (IPC) for mruby"
 
   spec.add_dependency "mruby-io", core: "mruby-io"
