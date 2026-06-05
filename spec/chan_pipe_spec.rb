@@ -35,10 +35,10 @@ describe "Chan::Pipe" do
       assert_equal "second", pipe.read
     end
 
-    it "returns nil when reading from an empty pipe" do
+    it "raises when reading from an empty pipe" do
       pipe.write("a")
       pipe.read
-      assert_nil pipe.read
+      assert_raises(Chan::WaitReadable) { pipe.read }
     end
   end
 

@@ -10,6 +10,14 @@
 #   ch.close
 module Chan
   ##
+  # @return [SystemCallError]
+  WaitReadable = Class.new(Errno::EWOULDBLOCK)
+
+  ##
+  # @return [SystemCallError]
+  WaitWritable = Class.new(Errno::EWOULDBLOCK)
+
+  ##
   # Coerces an object to a string for a
   # channel communicating in raw strings
   Pure = Class.new do

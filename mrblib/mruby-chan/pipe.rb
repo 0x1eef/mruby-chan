@@ -67,20 +67,27 @@ class Chan::Pipe
   # @raise [Chan::WaitWritable] when the nonblocking write would block
   # @return [Integer] number of bytes written
   def write(object)
-    data = serialize(object)
-    len = data.bytesize
-    @lock.lock_nonblock
     raise IOError, "closed channel" if closed?
-    @bytes.push(len)
-    @lock.release
-    @w.write(data)
     @lock.lock_nonblock
+    data = @write_data || serialize(object)
+    len = @write_len || data.bytesize
+    @write_offset ||= 0
+    if @write_data.nil?
+      @write_data, @write_len, @write_offset = data, len, 0
+      @bytes.push(len)
+    end
+    while @write_offset < @write_len
+      @write_offset += @w.syswrite(
+        @write_data[@write_offset, @write_len - @write_offset]
+      )
+    end
     @counter.increment!(bytes_written: len)
-    len
+    @write_data, @write_len, @write_offset = nil, nil, nil
+    len.tap { @lock.release }
   rescue Errno::EAGAIN
     raise Chan::WaitWritable
   ensure
-    @lock.release rescue nil
+    @lock.release
   end
 
   ##
@@ -97,19 +104,25 @@ class Chan::Pipe
   # @raise [Chan::WaitReadable] when the nonblocking read would block
   # @return [Object] deserialised object from the channel
   def read
-    @lock.lock_nonblock
     raise IOError, "closed channel" if closed?
-    len = @bytes.shift
-    @lock.release
-    return nil if len.zero?
-    data = @r.read(len)
     @lock.lock_nonblock
-    @counter.increment!(bytes_read: len)
-    deserialize(data)
+    len = @read_len || @bytes.shift
+    if len.zero?
+      raise Chan::WaitReadable, "read would block"
+    elsif @read_len.nil?
+      @read_len, @read_data = len, +""
+    end
+    while @read_data.bytesize < @read_len
+      @read_data << @r.sysread(@read_len - @read_data.bytesize)
+    end
+    @counter.increment!(bytes_read: @read_len)
+    data = @read_data
+    @read_len, @read_data = nil, nil
+    deserialize(data).tap { @lock.release }
   rescue Errno::EAGAIN
-    raise Chan::WaitReadable
+    raise Chan::WaitReadable, "read would block"
   ensure
-    @lock.release rescue nil
+    @lock.release
   end
 
   ##
