@@ -59,9 +59,12 @@ class Chan::Pipe
   # @group Write methods
 
   ##
-  # Performs a blocking write
+  # Performs a blocking write by default. When nonblocking mode
+  # has been enabled with {#nonblock!}, raises {Chan::WaitWritable}
+  # if the write would block.
   # @param [Object] object to serialise and send
   # @raise [IOError] when the channel is closed
+  # @raise [Chan::WaitWritable] when the nonblocking write would block
   # @return [Integer] number of bytes written
   def write(object)
     data = serialize(object)
@@ -87,8 +90,11 @@ class Chan::Pipe
   # @group Read methods
 
   ##
-  # Performs a blocking read
+  # Performs a blocking read by default. When nonblocking mode
+  # has been enabled with {#nonblock!}, raises {Chan::WaitReadable}
+  # if the read would block.
   # @raise [IOError] when the channel is closed
+  # @raise [Chan::WaitReadable] when the nonblocking read would block
   # @return [Object] deserialised object from the channel
   def read
     @lock.lock_nonblock
@@ -108,6 +114,16 @@ class Chan::Pipe
 
   ##
   # @endgroup
+
+  # @!group Mode methods
+  # @!method nonblock!
+  #  Enables nonblocking mode on both pipe ends.
+  #
+  #  After enabling nonblocking mode, {#read} raises {Chan::WaitReadable}
+  #  and {#write} raises {Chan::WaitWritable} when the operation cannot
+  #  complete immediately.
+  #  @return [nil]
+  # @!endgroup
 
   ##
   # @group Stat methods

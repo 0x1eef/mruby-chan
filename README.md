@@ -16,7 +16,8 @@ at the same time.
 * Minimalist Inter-Process Communication (IPC) for parent &lt;=&gt; child processes.
 * Channel-based communication using `IO.pipe`.
 * Support for raw string communication (`:pure`).
-* Blocking (`#send`, `#recv`) operations.
+* Blocking (`#write`, `#read`) operations by default.
+* Nonblocking pipe mode via `Chan::Pipe#nonblock!`.
 * Built-in file-based locking ([lockf(3)](https://man.freebsd.org/cgi/man.cgi?query=lockf&sektion=3)) to prevent race conditions.
 * Option to use a null lock for scenarios where locking is not needed.
 * Access to underlying pipe ends for fine-grained control.
@@ -44,11 +45,26 @@ and `load`:
 ch = chan(:pure)
 ```
 
+### Blocking and nonblocking mode
+
+Channels are blocking by default. Call `nonblock!` to put both pipe ends into
+nonblocking mode:
+
+```ruby
+ch = chan(:pure)
+ch.nonblock!
+```
+
+In nonblocking mode, reads and writes raise when they would otherwise wait:
+
+* `Chan::WaitReadable` when a read would block.
+* `Chan::WaitWritable` when a write would block.
+
 ### Read operations
 
-#### #recv
+#### #read
 
-The `ch.read` method performs a blocking read.
+The `ch.read` method performs a blocking read by default.
 The example performs a read that blocks until
 the parent process writes to the channel:
 
@@ -66,11 +82,14 @@ Process.wait
 ## Received: hello
 ```
 
+In nonblocking mode, `ch.read` raises `Chan::WaitReadable` when no complete
+message is ready.
+
 ### Write operations
 
-#### #send
+#### #write
 
-The `ch.write` method performs a blocking write.
+The `ch.write` method performs a blocking write by default.
 A write can block when a lock is held by another process:
 
 ```ruby
@@ -84,6 +103,9 @@ Process.wait
 
 ## hello from parent
 ```
+
+In nonblocking mode, `ch.write` raises `Chan::WaitWritable` when the pipe
+cannot accept data immediately.
 
 ### Lock
 
