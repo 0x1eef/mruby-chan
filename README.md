@@ -13,7 +13,9 @@ at the same time.
 
 ## Examples
 
-### chan
+### Introduction
+
+#### chan
 
 The `chan` method creates a channel with a given serializer. <br>
 The two default serializers are `pure`, and `json`:
@@ -23,7 +25,7 @@ ch = chan(:pure)
 ch = chan(:json)
 ```
 
-### Serialization
+#### Serialization
 
 A channel that will communicate purely in strings (in other words:
 without serialization) is available as `chan(:pure)`. Otherwise `json`
@@ -34,7 +36,7 @@ be given instead:
 ch = chan(:pure)
 ```
 
-### Nonblocking
+#### Nonblocking
 
 By default a channel is blocking, but it can also be non-blocking and
 work well with mruby-task:
