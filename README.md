@@ -11,53 +11,42 @@ and a file in `Chan.tmpdir` to protect against race conditions
 that can happen when multiple processes access the same channel
 at the same time.
 
-## Features
-
-* Minimalist Inter-Process Communication (IPC) for parent &lt;=&gt; child processes.
-* Channel-based communication using `IO.pipe`.
-* Support for raw string communication (`:pure`).
-* Blocking (`#write`, `#read`) operations by default.
-* Nonblocking mode via `Chan::Pipe#nonblock!`.
-* Built-in file-based locking ([lockf(3)](https://man.freebsd.org/cgi/man.cgi?query=lockf&sektion=3)) to prevent race conditions.
-* Option to use a null lock for scenarios where locking is not needed.
-* Access to underlying pipe ends for fine-grained control.
-* FreeBSD, Mac, and Linux support.
-* Good docs.
-
 ## Examples
 
 ### chan
 
-The `chan` method creates a channel with a given serializer:
+The `chan` method creates a channel with a given serializer. <br>
+The two default serializers are `pure`, and `json`:
 
 ```ruby
 ch = chan(:pure)
+ch = chan(:json)
 ```
 
 ### Serialization
 
 A channel that will communicate purely in strings (in other words:
-without serialization) is available as `chan(:pure)`. Otherwise
-a custom serializer can be passed &mdash; any object that implements `dump`
-and `load`:
+without serialization) is available as `chan(:pure)`. Otherwise `json`
+or a custom serializer that implements `dump`and `load` methods can
+be given instead:
 
 ```ruby
 ch = chan(:pure)
 ```
 
-### Blocking and nonblocking mode
+### Nonblocking
 
-Channels are blocking by default. Call `nonblock!` to put both pipe ends into
-nonblocking mode. In nonblocking mode, reads and writes raise when they would
-otherwise wait:
+By default a channel is blocking, but it can also be non-blocking and
+work well with mruby-task:
+```ruby
+ch = chan(:pure).tap(&:noblock!)
+```
+
+The following exceptions can be raised:
 
 * `Chan::WaitReadable` when a read would block.
 * `Chan::WaitWritable` when a write would block.
 
-```ruby
-ch = chan(:pure)
-ch.nonblock!
-```
 
 ### Read operations
 
@@ -134,22 +123,6 @@ end
 Process.wait
 ```
 
-### Pipe ends
-
-Access to the underlying pipe ends is available through
-`ch.r` (read end) and `ch.w` (write end):
-
-```ruby
-ch = chan(:pure)
-puts "Read end: #{ch.r}"
-puts "Write end: #{ch.w}"
-```
-
-## Documentation
-
-A complete API reference is available at
-[0x1eef.github.io/x/mruby-chan](https://0x1eef.github.io/x/mruby-chan)
-
 ## Install
 
 Add to your mruby build config:
@@ -161,7 +134,6 @@ conf.gem github: "0x1eef/mruby-chan", branch: "main"
 ## Sources
 
 * [github.com/0x1eef](https://github.com/0x1eef/mruby-chan#readme)
-* [git.home.network](http://git.home.network/0x1eef/mruby-chan)
 
 ## License
 

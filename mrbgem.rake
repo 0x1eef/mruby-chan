@@ -5,7 +5,7 @@ MRuby::Gem::Specification.new("mruby-chan") do |spec|
   spec.license = "0BSD"
   spec.authors = "0x1eef"
   spec.version = Chan::VERSION
-  spec.description = "InterProcess Communication (IPC) for mruby"
+  spec.description = "Easy IPC for mruby"
 
   spec.add_dependency "mruby-io", core: "mruby-io"
   spec.add_dependency "mruby-dir", core: "mruby-dir"
