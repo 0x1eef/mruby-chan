@@ -1,7 +1,7 @@
 ## About
 
-mruby-chan is an easy to use library for InterProcess Communication (IPC)
-for mruby.
+mruby-chan provides mruby with an easy to use library for
+InterProcess Communication (IPC).
 
 The library provides a channel that can help facilitate communication between
 mruby processes who have a parent &lt;=&gt; child relationship.
@@ -41,7 +41,7 @@ ch = chan(:pure)
 By default a channel is blocking, but it can also be non-blocking and
 work well with mruby-task:
 ```ruby
-ch = chan(:pure).tap(&:noblock!)
+ch = chan(:pure).tap(&:nonblock!)
 ```
 
 The following exceptions can be raised:
